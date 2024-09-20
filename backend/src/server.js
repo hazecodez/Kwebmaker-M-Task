@@ -1,15 +1,22 @@
 const express = require("express");
-const app = express();
 const cors = require("cors");
+const adminRoutes = require("./routes/adminRoutes");
+const sequelize = require("./config/database")
+const dotenv = require("dotenv");
+const path = require("path");
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 
-app.use(
-  cors({
-    origin: "http://localhost:5173"
-  })
-);
+const app = express();
 
+app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => res.send("Hello world"));
+app.use("/admin", adminRoutes);
 
-app.listen(5000, () => console.log("Server is running on port 5000"));
+sequelize
+  .sync()
+  .then(() => {
+    console.log("Database synced");
+    app.listen(5000, () => console.log("Server is running on port 5000"));
+  })
+  .catch((err) => console.error("Database sync error:", err));
