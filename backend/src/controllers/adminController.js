@@ -28,9 +28,10 @@ exports.login = async (req, res) => {
 
 exports.getDashboard = async (req, res) => {
   try {
-    const contentCount = await Content.findAll();
-    res.status(200).json(contentCount);
+    const content = await Content.findAll();
+    res.status(200).json({content,message:"Ayachind"});
   } catch (error) {
     res.status(500).send("Server Error");
   }
 };
+ 

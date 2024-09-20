@@ -1,12 +1,22 @@
 import { Card, Input, Button, Typography } from "@material-tailwind/react";
 import { useState } from "react";
+import { adminLogin } from "../Services/api";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export default function Login() {
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
-  const handleSubmit = async () => {
+  const navigate = useNavigate();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      console.log("hello");
+      const response = await adminLogin({ name, password });
+      if (response.data.accessToken) {
+        toast.success("Successfully logged");
+        localStorage.setItem("token", response.data.accessToken);
+        navigate("/admin/dashboard");
+      }
     } catch (error) {
       console.log(error);
     }

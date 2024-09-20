@@ -2,6 +2,9 @@ import axios from "axios";
 
 const AdminAPIs = axios.create({
   baseURL: "http://localhost:5000",
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
 export async function adminLogin(loginData) {
@@ -33,6 +36,8 @@ export async function getHomePageContents() {
 
 export async function updateHomePageContents(data) {
   try {
+    console.log(data.formdata);
+    
     const response = await AdminAPIs.post("/admin/content", data);
     return response;
   } catch (error) {
