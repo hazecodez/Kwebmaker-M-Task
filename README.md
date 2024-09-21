@@ -71,3 +71,6 @@ Start the frontend server
 ## Admin Login Details
 
 Login URL: [http://localhost:5173/admin/login](http://localhost:5173/admin/login)
+
+name: admin
+password : 1234
