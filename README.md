@@ -65,4 +65,9 @@ Start the frontend server
 ```
 
 
-- The server will be running on http://localhost:5173.
+- The server will be running on [http://localhost:5173](http://localhost:5173)
+
+
+## Admin Login Details
+
+Login URL: [http://localhost:5173/admin/login](http://localhost:5173/admin/login)
