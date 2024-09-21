@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
-const Content = sequelize.define("Content", {
+const SeoMeta = sequelize.define("SeoMeta", {
   title: {
     type: DataTypes.STRING,
     allowNull: false,
@@ -10,12 +10,10 @@ const Content = sequelize.define("Content", {
     type: DataTypes.TEXT,
     allowNull: false,
   },
-  seoKeywords: {
+  keywords: {
     type: DataTypes.STRING,
-  },
-  banner: {
-    type: DataTypes.STRING, // Store banner image URL
+    allowNull: true,
   },
 });
 
-module.exports = Content;
+module.exports = SeoMeta;

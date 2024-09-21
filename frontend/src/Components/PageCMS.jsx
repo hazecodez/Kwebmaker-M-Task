@@ -1,74 +1,116 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "./Css/styles.css";
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
-import { getHomePageContents, updateHomePageContents } from "../Services/api";
-import { Card, Typography } from "@material-tailwind/react";
+import {
+  getSeoMeta,
+  getBanners,
+  getContentSections,
+  updateSeoMeta,
+  updateBanner,
+  updateContentSection,
+} from "../Services/api";
 
-const TABLE_HEAD = ["Image","Title", "Description", "SEO Keywords", "Update"];
+const PageCMS = () => {
+  const [seoMeta, setSeoMeta] = useState({
+    title: "",
+    description: "",
+    keywords: "",
+  });
 
-export default function PageCMS() {
-  const [contents,setContent] = useState([])
+  const [banner, setBanner] = useState("");
+  const [contentSection, setContentSection] = useState({
+    title: "",
+    description: "",
+  });
+  const [preview, setpreview] = useState("");
+
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchContent = async () => {
-      const response = await getHomePageContents();
-      console.log(response.data);
-      
-      const content = response.data;
-      setContent(content)
+    // Fetch initial data for SEO, banners, and content sections
+    const fetchData = async () => {
+      const seoData = await getSeoMeta();
+
+      if (seoData) setSeoMeta(seoData);
+
+      const bannerData = await getBanners();
+      if (bannerData) setBanner(bannerData);
+      console.log(bannerData);
+
+      const contentData = await getContentSections();
+
+      if (contentData) setContentSection(contentData);
     };
 
-    fetchContent();
-  }, []);
+    fetchData();
+  }, [banner,contentSection,seoMeta]);
 
-  // const handleUpdate = async (event) => {
-  //   event.preventDefault();
-  //   const formData = new FormData();
-  //   formData.append("title", title);
-  //   formData.append("description", description);
-  //   formData.append("seoKeywords", seoKeywords);
+  const handleSeoChange = (e) => {
+    const { name, value } = e.target;
 
-  //   if (banner) {
-  //     formData.append("banner", banner);
-  //   }
-  //   console.log("he", formData);
+    setSeoMeta((prev) => ({ ...prev, [name]: value }));
+  };
 
-  //   // Call the update function from your api.js
-  //   const response = await updateHomePageContents(formData);
+  const handleUpdateSeoMeta = async () => {
+    const response = await updateSeoMeta(seoMeta);
+    if (response) {
+      toast.success("SEO Meta updated successfully!");
+    } else {
+      toast.error("Failed to update SEO Meta.");
+    }
+  };
 
-  //   if (response) {
-  //     toast.success("Home page content updated successfully!");
-  //   } else {
-  //     toast.error("Failed to update home page content.");
-  //   }
-  // };
+  const handleUpdateBanners = async () => {
+    const response = await updateBanner(preview);
+    if (response) {
+      toast.success("Banners updated successfully!");
+    } else {
+      toast.error("Failed to update banners.");
+    }
+  };
+
+  const handleBannerChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onloadend = () => {
+        setpreview(reader.result);
+      };
+    }
+  };
+
+  const handleContentChange = (e) => {
+    const { name, value } = e.target;
+
+    console.log(name);
+    setContentSection((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleUpdateContentSections = async () => {
+    const response = await updateContentSection(1, contentSection);
+    if (response) {
+      toast.success("Content sections updated successfully!");
+    } else {
+      toast.error("Failed to update content sections.");
+    }
+  };
+
   return (
     <div className="sb-nav-fixed">
       <nav className="sb-topnav navbar navbar-expand navbar-dark bg-dark">
         <a className="navbar-brand ps-3">Admin Panel</a>
-
-        <div className="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0">
-          <div className="input-group"></div>
-        </div>
-
-        <ul className="navbar-nav ms-auto ms-md-0 me-3 me-lg-4">
+        <ul className="navbar-nav ms-auto">
           <li className="nav-item dropdown">
             <a
               className="nav-link dropdown-toggle"
-              id="navbarDropdown"
               href="#"
               role="button"
               data-bs-toggle="dropdown"
-              aria-expanded="false"
             >
               <i className="fas fa-user fa-fw"></i>
             </a>
-            <ul
-              className="dropdown-menu dropdown-menu-end"
-              aria-labelledby="navbarDropdown"
-            >
+            <ul className="dropdown-menu dropdown-menu-end">
               <li>
                 <a
                   onClick={() => {
@@ -87,10 +129,7 @@ export default function PageCMS() {
       </nav>
       <div id="layoutSidenav">
         <div id="layoutSidenav_nav">
-          <nav
-            className="sb-sidenav accordion sb-sidenav-dark"
-            id="sidenavAccordion"
-          >
+          <nav className="sb-sidenav accordion sb-sidenav-dark">
             <div className="sb-sidenav-menu">
               <div className="nav">
                 <a
@@ -119,105 +158,133 @@ export default function PageCMS() {
             </div>
           </nav>
         </div>
-        <div id="layoutSidenav_content">
-          <main>
-            <div className="container-fluid px-4">
-              <h1 className="mt-4">Content Management</h1>
-              <ol className="breadcrumb mb-4"></ol>
+      </div>
 
-              <Card className="h-full w-full overflow-scroll">
-                <table className="w-full min-w-max table-auto text-left">
-                  <thead>
-                    <tr>
-                      {TABLE_HEAD.map((head) => (
-                        <th
-                          key={head}
-                          className="border-b border-blue-gray-100 bg-blue-gray-50 p-4"
-                        >
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal leading-none opacity-70"
-                          >
-                            {head}
-                          </Typography>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {contents.map((data, index) => (
-                      <tr key={index} className="even:bg-blue-gray-50/50">
-                        <td className="p-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal"
-                          >
-                            {data.banner}
-                          </Typography>
-                        </td>
-                        <td className="p-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal"
-                          >
-                            {data.title}
-                          </Typography>
-                        </td>
-                        <td className="p-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal"
-                          >
-                            {data.description}
-                          </Typography>
-                        </td>
-                        <td className="p-4">
-                          <Typography
-                            variant="small"
-                            color="blue-gray"
-                            className="font-normal"
-                          >
-                            {data.seoKeywords}
-                          </Typography>
-                        </td>
-                        <td className="p-4">
-                          <Typography
-                            as="a"
-                            href="#"
-                            variant="small"
-                            color="blue-gray"
-                            className="font-medium"
-                          >
-                            Edit
-                          </Typography>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </Card>
+      <div className="container mx-auto mt-10 p-6 space-y-6">
+        {/* SEO Meta Section */}
+        <div
+          className="bg-white shadow-md rounded-lg p-6 border border-gray-200 max-w-3xl ml-auto"
+          style={{ width: "75%", marginLeft: "20%" }}
+        >
+          <h2 className="text-xl font-semibold mb-4">SEO Meta Tags</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-bold mb-2">Title</label>
+              <input
+                type="text"
+                name="title"
+                value={seoMeta.title}
+                onChange={handleSeoChange}
+                className="w-full p-3 border rounded-lg"
+              />
             </div>
-          </main>
-          <footer className="py-4 bg-light mt-auto">
-            <div className="container-fluid px-4">
-              <div className="d-flex align-items-center justify-content-between small">
-                <div className="text-muted">
-                  Copyright &copy; Your Website 2024
-                </div>
-                <div>
-                  <a href="#">Privacy Policy</a>
-                  &middot;
-                  <a href="#">Terms &amp; Conditions</a>
-                </div>
-              </div>
+            <div>
+              <label className="block text-sm font-bold mb-2">
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={seoMeta.description}
+                onChange={handleSeoChange}
+                className="w-full p-3 border rounded-lg"
+              />
             </div>
-          </footer>
+            <div>
+              <label className="block text-sm font-bold mb-2">Keywords</label>
+              <input
+                type="text"
+                name="keywords"
+                value={seoMeta.keywords}
+                onChange={handleSeoChange}
+                className="w-full p-3 border rounded-lg"
+              />
+            </div>
+            <button
+              onClick={handleUpdateSeoMeta}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300"
+            >
+              Update SEO Meta
+            </button>
+          </div>
+        </div>
+
+        {/* Banners Section */}
+        <div
+          className="bg-white shadow-md rounded-lg p-6 border border-gray-200 max-w-3xl ml-auto"
+          style={{ width: "75%", marginLeft: "20%" }}
+        >
+          <h2 className="text-xl font-semibold mb-4">Banners</h2>
+
+          <div key="1" className="mb-4">
+            <label className="block text-sm font-bold mb-2">Banner Image</label>
+            {banner ? (
+              <img
+                className="h-60 w-5/6"
+                src={`https://res.cloudinary.com/doac4pi2c/image/upload/${banner[0].image}`}
+                alt=""
+              />
+            ) : (
+              <>
+                <img className="h-60 w-5/6" src={preview} alt="" />
+              </>
+            )}
+            {}
+            <input
+              type="file"
+              value={banner.title}
+              onChange={handleBannerChange}
+              className="w-full p-3 border rounded-lg"
+              placeholder="Banner URL"
+            />
+          </div>
+
+          <button
+            onClick={handleUpdateBanners}
+            className="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300"
+          >
+            Update Banners
+          </button>
+        </div>
+
+        {/* Content Sections */}
+        <div
+          className="bg-white shadow-md rounded-lg p-6 border border-gray-200 max-w-3xl ml-auto"
+          style={{ width: "75%", marginLeft: "20%" }}
+        >
+          <h2 className="text-xl font-semibold mb-4">Content Sections</h2>
+
+          <div key="1" className="mb-4">
+            <label className="block text-sm font-bold mb-2">
+              Section Title
+            </label>
+            <input
+              name="title"
+              type="text"
+              value={contentSection.title}
+              onChange={handleContentChange}
+              className="w-full p-3 border rounded-lg"
+            />
+            <label className="block text-sm font-bold mb-2 mt-2">
+              Section Description
+            </label>
+            <textarea
+              name="description"
+              value={contentSection.description}
+              onChange={handleContentChange}
+              className="w-full p-3 border rounded-lg"
+            />
+          </div>
+
+          <button
+            onClick={handleUpdateContentSections}
+            className="ml-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300"
+          >
+            Update Content Sections
+          </button>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default PageCMS;

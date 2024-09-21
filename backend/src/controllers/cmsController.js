@@ -1,62 +1,81 @@
-const Content = require("../models/contentModel");
+const ContentSection = require("../models/ContentSectionModel");
+const Banner = require("../models/bannerModel");
+const SeoMeta = require("../models/seoModel");
+const { uploadImage } = require("../utils/claudinary");
 
-const getHomePageContent = async (req, res) => {
+// Get all content sections
+const getContentSections = async (req, res) => {
   try {
-    console.log("ethiii");
-
-    const content = await Content.findAll();
-    res.status(200).json(content);
+    const sections = await ContentSection.findAll();
+    res.json(sections);
   } catch (error) {
-    res.status(500).send("Server error");
+    res.status(500).json({ error: "Failed to fetch content sections" });
   }
 };
 
-const addHomePageContent = async (req, res) => {
-  const { title, description, seoKeywords, banner } = req.body;
-
+// Update a content section
+const updateContentSection = async (req, res) => {
   try {
-    const content = await Content.create({
-      title,
-      description,
-      seoKeywords,
-      banner,
-    });
-    res.status(200).json(content);
+    const { id } = req.params;
+    console.log(req.body);
+
+    await ContentSection.update(req.body, { where: { id } });
+    res.status(200).json({ message: "Content section updated" });
   } catch (error) {
-    res.status(500).send("Server error");
+    res.status(500).json({ error: "Failed to update content section" });
   }
 };
 
-const updateHomePageContent = async (req, res) => {
-  const { title, description, seoKeywords, banner } = req.body;
-  const { id } = req.params;
-
+// Get all banners
+const getBanners = async (req, res) => {
   try {
-    const content = await Content.findOne({ where: { id } });
-
-    if (!content) {
-      return res.json({ message: "Content not found" }).status(404);
-    }
-
-    await Content.update(
-      {
-        title,
-        description,
-        seoKeywords,
-        banner,
-      },
-      { where: { id } }
-    );
-
-    const updatedContent = await Content.findOne({ where: { id } });
-    res.status(200).json(updatedContent);
+    const banners = await Banner.findAll();
+    res.json(banners);
   } catch (error) {
-    res.status(500).send("Server error");
+    res.status(500).json({ error: "Failed to fetch banners" });
+  }
+};
+
+// Update a banner
+const updateBanner = async (req, res) => {
+  const banner = req.body.image;
+  const id = req.params.id;
+  try {
+    const image = await uploadImage(banner, "banner");
+
+    await Banner.update({ image }, { where: { id } });
+
+    res.status(200).json({ message: "Banner updated" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update banner" });
+  }
+};
+
+// Get SEO meta
+const getSeoMeta = async (req, res) => {
+  try {
+    const seoMeta = await SeoMeta.findOne(); // Assuming one record for SEO
+    res.json(seoMeta);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch SEO meta" });
+  }
+};
+
+// Update SEO meta
+const updateSeoMeta = async (req, res) => {
+  try {
+    await SeoMeta.update(req.body, { where: { id: 1 } });
+    res.status(200).json({ message: "SEO meta updated" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update SEO meta" });
   }
 };
 
 module.exports = {
-  getHomePageContent,
-  addHomePageContent,
-  updateHomePageContent,
+  getContentSections,
+  updateContentSection,
+  getBanners,
+  updateBanner,
+  getSeoMeta,
+  updateSeoMeta,
 };

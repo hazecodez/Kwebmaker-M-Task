@@ -1,7 +1,9 @@
 const Admin = require("../models/adminModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const Content = require("../models/contentModel");
+const Banner = require("../models/bannerModel");
+const ContentSection = require("../models/ContentSectionModel");
+const SeoMeta = require("../models/seoModel");
 
 exports.login = async (req, res) => {
   const { name, password } = req.body;
@@ -28,10 +30,18 @@ exports.login = async (req, res) => {
 
 exports.getDashboard = async (req, res) => {
   try {
-    const content = await Content.findAll();
-    res.status(200).json({content,message:"Ayachind"});
+    // Fetching data from all models
+    const banners = await Banner.findAll();
+    const contentSections = await ContentSection.findAll();
+    const seoMeta = await SeoMeta.findAll();
+
+    res.status(200).json({
+      banners,
+      contentSections,
+      seoMeta,
+    });
   } catch (error) {
-    res.status(500).send("Server Error");
+    console.error(error);
+    res.status(500).json({ error: "Server Error" });
   }
 };
- 
